@@ -354,10 +354,150 @@ WHERE ce.anyo_inicio = '2018';
 - **Logic**: 
   - Joins the `alumno_se_matricula_asignatura`, `curso_escolar`, and `persona` tables.
   - Filters records for the school year starting in 2018 and selects distinct student records.
+ 
+## Miscellaneous - Shop
 
-- **Purpose**: Identify students who are not assigned any subjects.
+### 1. List Products from Manufacturers Whose Name Ends with 'e'
 
+```sql
+SELECT p.nombre, p.precio FROM producto p 
+JOIN fabricante f ON p.codigo_fabricante = f.codigo 
+WHERE LOWER(RIGHT(f.nombre, 1)) = 'e';
+```
+
+- **Purpose**: Retrieve products from manufacturers whose name ends with the letter 'e'.
 - **Logic**: 
-  - Joins the `persona` and `profesor` tables.
-  - Left joins the `persona` and `asignatura` tables.
-  - Filters for students without any associated subjects.
+  - Joins `producto` with `fabricante`.
+  - Filters manufacturers whose name ends with 'e' (case-insensitive).
+
+### 2. List Products from Manufacturers Whose Name Contains 'w'
+
+```sql
+SELECT p.nombre, p.precio FROM producto p 
+JOIN fabricante f ON p.codigo_fabricante = f.codigo 
+WHERE LOWER(f.nombre) LIKE '%w%';
+```
+
+- **Purpose**: Retrieve products from manufacturers whose name contains the letter 'w'.
+- **Logic**: 
+  - Joins `producto` with `fabricante`.
+  - Filters manufacturers whose name contains 'w' (case-insensitive).
+
+### 3. List Products with Price >= 180 with Manufacturer Name
+
+```sql
+SELECT p.nombre, p.precio, f.nombre AS fabricante FROM producto p 
+JOIN fabricante f ON p.codigo_fabricante = f.codigo 
+WHERE p.precio >= 180 
+ORDER BY p.precio DESC, p.nombre ASC;
+```
+
+- **Purpose**: Retrieve products with a price of 180 or higher, including manufacturer names.
+- **Logic**: 
+  - Joins `producto` with `fabricante`.
+  - Filters products with a price greater than or equal to 180.
+  - Orders results by price (descending) and product name (ascending).
+
+### 4. List Manufacturers with Their Products
+
+```sql
+SELECT DISTINCT f.nombre, GROUP_CONCAT(p.nombre SEPARATOR ', ') FROM fabricante f 
+JOIN producto p ON p.codigo_fabricante = f.codigo
+GROUP BY f.nombre;
+```
+
+- **Purpose**: Retrieve all manufacturers and a comma-separated list of their products.
+- **Logic**: 
+  - Joins `fabricante` with `producto`.
+  - Groups by manufacturer name and concatenates product names.
+
+### 5. List All Manufacturers with Their Products (Including Manufacturers with No Products)
+
+```sql
+SELECT DISTINCT f.nombre, GROUP_CONCAT(p.nombre SEPARATOR ', ') FROM fabricante f 
+LEFT JOIN producto p ON p.codigo_fabricante = f.codigo
+GROUP BY f.nombre;
+```
+
+- **Purpose**: Retrieve all manufacturers and a comma-separated list of their products, including those with no products.
+- **Logic**: 
+  - Left joins `fabricante` with `producto`.
+  - Groups by manufacturer name and concatenates product names.
+
+### 6. List Manufacturers with No Products
+
+```sql
+SELECT DISTINCT f.nombre FROM fabricante f 
+LEFT JOIN producto p ON p.codigo_fabricante = f.codigo
+WHERE p.codigo IS NULL;
+```
+
+- **Purpose**: Identify manufacturers that have no products.
+- **Logic**: 
+  - Left joins `fabricante` with `producto`.
+  - Filters for manufacturers with no associated products.
+
+### 7. List All Products from 'Lenovo'
+
+```sql
+SELECT DISTINCT p.* FROM fabricante f 
+JOIN producto p ON p.codigo_fabricante = f.codigo
+WHERE f.nombre = 'Lenovo';
+```
+
+- **Purpose**: Retrieve all products manufactured by 'Lenovo'.
+- **Logic**: 
+  - Joins `fabricante` with `producto`.
+  - Filters for products with the manufacturer name 'Lenovo'.
+
+### 8. List the Most Expensive Product from Manufacturer with Code 2
+
+```sql
+SELECT p.nombre, p.precio FROM producto p 
+WHERE p.precio = (SELECT MAX(p2.precio) FROM producto p2 WHERE p2.codigo_fabricante = 2);
+```
+
+- **Purpose**: Retrieve the most expensive product from the manufacturer with code 2.
+- **Logic**: 
+  - Filters products to find the one with the maximum price for the manufacturer with code 2.
+
+### 9. List the Most Expensive Product from Manufacturer with Code 2 (Alternative)
+
+```sql
+SELECT p.nombre FROM producto p 
+WHERE p.codigo_fabricante = 2
+ORDER BY p.precio DESC 
+LIMIT 1;
+```
+
+- **Purpose**: Retrieve the most expensive product from the manufacturer with code 2.
+- **Logic**: 
+  - Filters products by manufacturer code 2.
+  - Orders results by price (descending) and limits to the top result.
+
+### 10. List the Cheapest Product from Manufacturer with Code 3
+
+```sql
+SELECT p.nombre FROM producto p 
+WHERE p.codigo_fabricante = 3
+ORDER BY p.precio ASC 
+LIMIT 1;
+```
+
+- **Purpose**: Retrieve the cheapest product from the manufacturer with code 3.
+- **Logic**: 
+  - Filters products by manufacturer code 3.
+  - Orders results by price (ascending) and limits to the top result.
+
+### 11. List Products from Manufacturer with Code 1 Priced Above Average
+
+```sql
+SELECT p.nombre, p.precio FROM producto p 
+WHERE p.precio > (SELECT AVG(p2.precio) FROM producto p2 WHERE p2.codigo_fabricante = 1) 
+AND p.codigo_fabricante = 1;
+```
+
+- **Purpose**: Retrieve products from the manufacturer with code 1 that are priced above the average price of products from the same manufacturer.
+- **Logic**: 
+  - Filters products by manufacturer code 1.
+  - Compares product price with the average price of products from the same manufacturer.
