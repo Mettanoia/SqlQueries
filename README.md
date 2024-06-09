@@ -1,6 +1,6 @@
 # README
 
-## Queries Explanation
+## LEFT and RIGHT JOINs - University
 
 ### 1. Retrieve Professors and Their Departments
 
@@ -98,7 +98,7 @@ WHERE ce.id IS NULL;
   - Filters for subjects that are not enrolled by any students.
 
 
-## Summary Queries
+## Summary Queries - University
 
 ### 1. Count Total Students
 
@@ -243,6 +243,117 @@ JOIN profesor prof ON p.id = prof.id_profesor
 LEFT JOIN asignatura a ON p.id = a.id_profesor
 WHERE a.id IS NULL;
 ```
+
+## Miscellaneous - University
+
+### 1. List All Students Ordered by Name and Surnames
+
+```sql
+SELECT p.nombre, p.apellido1, p.apellido2 FROM persona p 
+WHERE p.tipo = 'alumno'
+ORDER BY p.nombre, p.apellido1, p.apellido2 ASC;
+```
+
+- **Purpose**: Retrieve all students, ordered by their first name and surnames.
+- **Logic**: 
+  - Filters records in the `persona` table where `tipo` is 'alumno'.
+  - Orders the results by `nombre`, `apellido1`, and `apellido2`.
+
+### 2. List Students Without a Phone Number
+
+```sql
+SELECT p.nombre, p.apellido1, p.apellido2 FROM persona p 
+WHERE p.tipo = 'alumno' AND p.telefono IS NULL;
+```
+
+- **Purpose**: Retrieve all students who do not have a phone number.
+- **Logic**: 
+  - Filters records in the `persona` table where `tipo` is 'alumno' and `telefono` is NULL.
+
+### 3. List Students Born in 1999
+
+```sql
+SELECT p.nombre, p.apellido1, p.apellido2 FROM persona p 
+WHERE p.tipo = 'alumno' AND YEAR(p.fecha_nacimiento) = 1999;
+```
+
+- **Purpose**: Retrieve all students born in 1999.
+- **Logic**: 
+  - Filters records in the `persona` table where `tipo` is 'alumno' and the birth year is 1999.
+
+### 4. List Professors Without a Phone Number and Whose NIF Ends in 'K'
+
+```sql
+SELECT p.nombre, p.apellido1, p.apellido2
+FROM persona p 
+WHERE p.tipo = 'profesor' 
+AND p.telefono IS NULL 
+AND RIGHT(p.nif, 1) = 'K';
+```
+
+- **Purpose**: Retrieve all professors who do not have a phone number and whose NIF ends with 'K'.
+- **Logic**: 
+  - Filters records in the `persona` table where `tipo` is 'profesor', `telefono` is NULL, and the last character of `nif` is 'K'.
+
+### 5. List Professors with Their Departments Ordered by Name and Surnames
+
+```sql
+SELECT p.nombre, p.apellido1, p.apellido2, d.nombre AS departamento FROM persona p 
+JOIN profesor p2 ON p2.id_profesor = p.id 
+JOIN departamento d ON p2.id_departamento = d.id 
+ORDER BY p.nombre, p.apellido1, p.apellido2 ASC;
+```
+
+- **Purpose**: Retrieve all professors along with their department names, ordered by their first name and surnames.
+- **Logic**: 
+  - Joins the `persona`, `profesor`, and `departamento` tables.
+  - Orders the results by `nombre`, `apellido1`, and `apellido2`.
+
+### 6. List Courses Taken by a Specific Student Grouped by School Year
+
+```sql
+SELECT ce.anyo_inicio, ce.anyo_fin, GROUP_CONCAT(a.nombre SEPARATOR ', ') AS asignaturas FROM persona p 
+JOIN alumno_se_matricula_asignatura asma ON p.id = asma.id_alumno
+JOIN asignatura a ON asma.id_asignatura = a.id 
+JOIN curso_escolar ce ON ce.id = asma.id_curso_escolar
+WHERE p.nif = '26902806M'
+GROUP BY ce.anyo_inicio, ce.anyo_fin;
+```
+
+- **Purpose**: Retrieve all courses taken by a specific student, grouped by the school year.
+- **Logic**: 
+  - Joins the `persona`, `alumno_se_matricula_asignatura`, `asignatura`, and `curso_escolar` tables.
+  - Filters records for the student with NIF '26902806M'.
+  - Groups the results by school year and concatenates course names.
+
+### 7. List Departments Offering a Specific Degree Program
+
+```sql
+SELECT DISTINCT d.nombre FROM asignatura a 
+JOIN grado g ON a.id_grado = g.id 
+JOIN profesor p ON a.id_profesor = p.id_profesor 
+JOIN departamento d ON p.id_departamento = d.id
+WHERE g.nombre = 'Grado en Ingeniería Informática (Plan 2015)';
+```
+
+- **Purpose**: Retrieve all departments that offer the 'Grado en Ingeniería Informática (Plan 2015)' degree program.
+- **Logic**: 
+  - Joins the `asignatura`, `grado`, `profesor`, and `departamento` tables.
+  - Filters records for the specified degree program and selects distinct department names.
+
+### 8. List Students Enrolled in a Specific School Year
+
+```sql
+SELECT DISTINCT p.* FROM alumno_se_matricula_asignatura asma 
+JOIN curso_escolar ce ON ce.id = asma.id_curso_escolar 
+JOIN persona p ON p.id = asma.id_alumno 
+WHERE ce.anyo_inicio = '2018';
+```
+
+- **Purpose**: Retrieve all students who were enrolled in the school year starting in 2018.
+- **Logic**: 
+  - Joins the `alumno_se_matricula_asignatura`, `curso_escolar`, and `persona` tables.
+  - Filters records for the school year starting in 2018 and selects distinct student records.
 
 - **Purpose**: Identify students who are not assigned any subjects.
 
